@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { Canvas } from '@react-three/fiber';
+import { Canvas, useFrame} from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
 import * as THREE from 'three';
 import './index.css';
@@ -37,21 +37,16 @@ const Orbit = ({ distance }) => {
 // Planet component
 const Planet = ({ size, color, distance, speed }) => {
   const ref = React.useRef();
-  const [angle, setAngle] = React.useState(0);
+  let angle = 0;
 
-  React.useEffect(() => {
-    const id = setInterval(() => {
-      setAngle((prev) => prev + speed);
-    }, 16);
-
-    return () => clearInterval(id);
-  }, [speed]);
+  useFrame(() => {
+    angle += speed;
+    ref.current.position.x = distance * Math.cos(angle);
+    ref.current.position.z = distance * Math.sin(angle);
+  });
 
   return (
-    <mesh
-      ref={ref}
-      position={[distance * Math.cos(angle), 0, distance * Math.sin(angle)]}
-    >
+    <mesh ref={ref}>
       <sphereGeometry args={[size, 32, 32]} />
       <meshStandardMaterial color={color} />
     </mesh>
@@ -62,7 +57,7 @@ const Planet = ({ size, color, distance, speed }) => {
 const SolarSystem = () => {
   return (
     <Canvas style={{ height: '100vh' }} camera={{ position: [0, 30, 30] }}>
-      <ambientLight intensity={0.2} />
+      <ambientLight intensity={0.8} />
       <pointLight intensity={1} position={[0, 0, 0]} />
       <Sun />
       <Orbit distance={5} />
